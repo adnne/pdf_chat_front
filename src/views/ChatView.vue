@@ -1,10 +1,16 @@
 <template>
-  <div class="h-[calc(100vh-4rem)] flex flex-col border border-dark-accent/20">
+  <div class="h-[calc(100vh-130px)] flex flex-col border border-dark-accent/20">
+    <PdfPreviewModal
+      :is-open="isPdfPreviewOpen"
+      :title="document?.name || 'PDF Preview'"
+      :pdf-url="document?.url || ''"
+      @close="closePdfPreview"
+    />
     <!-- Chat Header -->
     <div
-      class="flex items-center justify-between p-4 border-b border-dark-accent bg-dark-secondary "
+      class="flex items-center  p-4 border-b border-dark-accent bg-dark-secondary"
     >
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-4 w-full">
         <router-link to="/documents" class="btn-primary p-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -19,12 +25,30 @@
             />
           </svg>
         </router-link>
-        <div>
+        <div class="flex items-center  space-x-4 w-full">
           <h2 class="text-lg font-semibold">{{ document?.name || "Chat" }}</h2>
+          <button
+            @click="isPdfPreviewOpen = true"
+            class="btn-primary p-2"
+            title="Preview PDF"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+              <path
+                fill-rule="evenodd"
+                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
           <p class="text-sm text-light-secondary">PDF Assistant</p>
         </div>
       </div>
-     
     </div>
 
     <!-- Chat Messages -->
@@ -134,6 +158,7 @@
 <script setup>
 import { ref, onMounted, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
+import PdfPreviewModal from "../components/PdfPreviewModal.vue";
 
 const route = useRoute();
 const messagesContainer = ref(null);
@@ -144,7 +169,14 @@ const isTyping = ref(false);
 const document = ref({
   id: route.params.id,
   name: "Technical Documentation.pdf",
+  url: "/sample.pdf", // Replace with actual PDF URL
 });
+
+const isPdfPreviewOpen = ref(false);
+
+const closePdfPreview = () => {
+  isPdfPreviewOpen.value = false;
+};
 
 // Mock messages - replace with actual chat history
 const messages = ref([

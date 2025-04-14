@@ -50,7 +50,7 @@
 
     <!-- User Menu -->
     <div class="flex items-center space-x-2 sm:space-x-4">
-      <button class="btn-primary hidden sm:flex">
+      <button class="btn-primary hidden sm:flex ">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5"

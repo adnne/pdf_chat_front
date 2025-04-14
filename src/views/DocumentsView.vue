@@ -135,11 +135,18 @@
       </div>
     </div>
   </div>
+  <PdfPreviewModal
+    :is-open="isPdfPreviewOpen"
+    :title="selectedDocument?.name || 'PDF Preview'"
+    :pdf-url="selectedDocument?.url || ''"
+    @close="closePdfPreview"
+  />
 </template>
 
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
+import PdfPreviewModal from "../components/PdfPreviewModal.vue";
 
 const router = useRouter();
 const searchQuery = ref("");
@@ -150,21 +157,24 @@ const isGridView = ref(true);
 const documents = ref([
   {
     id: 1,
-    name: "Project Proposal.pdf",
+    name: "Sample Document.pdf",
     date: "2024-04-14",
-    size: "2.5 MB",
+    size: "0.1 MB",
+    url: "/sample.pdf",
   },
   {
     id: 2,
-    name: "Technical Documentation.pdf",
+    name: "Project Proposal.pdf",
     date: "2024-04-13",
-    size: "1.8 MB",
+    size: "2.5 MB",
+    url: "https://example.com/files/project-proposal.pdf",
   },
   {
     id: 3,
-    name: "Research Paper.pdf",
+    name: "Technical Documentation.pdf",
     date: "2024-04-12",
-    size: "3.2 MB",
+    size: "1.8 MB",
+    url: "https://example.com/files/technical-documentation.pdf",
   },
 ]);
 
@@ -204,8 +214,16 @@ const downloadDocument = (document) => {
   console.log("Downloading:", document.name);
 };
 
+const selectedDocument = ref(null);
+const isPdfPreviewOpen = ref(false);
+
 const openDocument = (document) => {
-  // TODO: Implement document preview
-  console.log("Opening:", document.name);
+  selectedDocument.value = document;
+  isPdfPreviewOpen.value = true;
+};
+
+const closePdfPreview = () => {
+  isPdfPreviewOpen.value = false;
+  selectedDocument.value = null;
 };
 </script>

@@ -1,14 +1,16 @@
 <template>
   <aside
-    class="fixed inset-y-0 left-0 w-64 bg-dark-secondary border-r border-dark-accent"
+    class="w-64 h-full bg-dark-secondary border-r border-dark-accent overflow-y-auto fixed left-0 top-0"
   >
     <!-- Logo/Branding -->
-    <div class="p-4 border-b border-dark-accent">
+    <div
+      class="p-3 sm:p-4 border-b border-dark-accent h-16 flex items-center justify-between"
+    >
       <h1 class="text-xl font-semibold text-light-primary">PDF Chatbot</h1>
     </div>
 
     <!-- Navigation Links -->
-    <nav class="p-4 space-y-2">
+    <nav class="p-3 sm:p-4 space-y-1 sm:space-y-2">
       <router-link
         to="/documents"
         class="sidebar-link"

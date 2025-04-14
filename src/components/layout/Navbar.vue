@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="fixed top-0 right-0 left-64 h-16 bg-dark-secondary border-b border-dark-accent px-4 flex items-center justify-between"
+    class="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-dark-secondary border-b border-dark-accent px-3 sm:px-4 flex items-center justify-between transition-all duration-300"
   >
     <!-- Mobile Menu Button (visible on small screens) -->
     <button
@@ -24,8 +24,8 @@
     </button>
 
     <!-- Search Bar -->
-    <div class="hidden md:block flex-1 max-w-xl mx-4">
-      <div class="relative">
+    <div class="hidden sm:block flex-1 max-w-xl mx-2 sm:mx-4">
+      <div class="relative w-full">
         <input
           type="text"
           placeholder="Search documents..."
@@ -49,8 +49,8 @@
     </div>
 
     <!-- User Menu -->
-    <div class="flex items-center space-x-4">
-      <button class="btn-primary">
+    <div class="flex items-center space-x-2 sm:space-x-4">
+      <button class="btn-primary hidden sm:flex">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5"
@@ -83,7 +83,7 @@
         <!-- Dropdown Menu -->
         <div
           v-if="isUserMenuOpen"
-          class="absolute right-0 mt-2 w-48 bg-dark-secondary rounded-lg shadow-lg py-1"
+          class="absolute right-0 mt-2 w-48 bg-dark-secondary rounded-lg shadow-lg py-1 border border-dark-accent/20 z-50"
         >
           <a href="#" class="block px-4 py-2 text-sm hover:bg-dark-accent">
             Profile
@@ -98,8 +98,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, inject } from "vue";
 
 const isUserMenuOpen = ref(false);
-const isSidebarOpen = ref(false);
+const isSidebarOpen = inject("isSidebarOpen");
 </script>

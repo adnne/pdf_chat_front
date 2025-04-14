@@ -16,7 +16,7 @@ export default {
         'light-accent': '#E5E7EB',
       },
       fontFamily: {
-        sans: ['Inter var', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'xl': '1rem',
@@ -24,6 +24,15 @@ export default {
       },
       boxShadow: {
         'glow': '0 0 15px rgba(156, 163, 175, 0.1)',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '112': '28rem',
+        '128': '32rem',
+      },
+      screens: {
+        'xs': '475px',
       },
     },
   },

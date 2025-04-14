@@ -53,9 +53,12 @@
           class="hidden"
           @change="handleFileSelect"
         />
-        <button class="btn-primary px-6 py-3" @click="$refs.fileInput.click()">
+        <div class="flex justify-center" >
+          <button class="btn-primary px-6 py-3 self-center" @click="$refs.fileInput.click()">
           Select File
-        </button>
+          </button>
+        </div>
+      
         <p class="text-sm text-light-secondary mt-4">Maximum file size: 10MB</p>
       </div>
     </div>

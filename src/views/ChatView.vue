@@ -1,8 +1,8 @@
 <template>
-  <div class="h-[calc(100vh-4rem)] flex flex-col">
+  <div class="h-[calc(100vh-4rem)] flex flex-col border border-dark-accent/20">
     <!-- Chat Header -->
     <div
-      class="flex items-center justify-between p-4 border-b border-dark-accent bg-dark-secondary"
+      class="flex items-center justify-between p-4 border-b border-dark-accent bg-dark-secondary "
     >
       <div class="flex items-center space-x-4">
         <router-link to="/documents" class="btn-primary p-2">
@@ -24,20 +24,7 @@
           <p class="text-sm text-light-secondary">PDF Assistant</p>
         </div>
       </div>
-      <button class="btn-primary p-2" @click="toggleSidebar">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </button>
+     
     </div>
 
     <!-- Chat Messages -->

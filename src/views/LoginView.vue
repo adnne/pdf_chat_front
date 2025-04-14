@@ -51,7 +51,7 @@
           <!-- Remember Me & Forgot Password -->
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <input
+              <!-- <input
                 id="remember-me"
                 type="checkbox"
                 v-model="rememberMe"
@@ -61,7 +61,7 @@
                 for="remember-me"
                 class="ml-2 block text-sm text-light-secondary"
                 >Remember me</label
-              >
+              > -->
             </div>
 
             <a
@@ -81,7 +81,7 @@
         </form>
 
         <!-- Divider -->
-        <div class="relative my-6">
+        <!-- <div class="relative my-6">
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-dark-accent"></div>
           </div>
@@ -90,10 +90,10 @@
               >Or continue with</span
             >
           </div>
-        </div>
+        </div> -->
 
         <!-- Social Login Buttons -->
-        <div class="grid grid-cols-2 gap-3">
+        <!-- <div class="grid grid-cols-2 gap-3">
           <button
             class="btn-primary flex items-center justify-center space-x-2"
           >
@@ -128,16 +128,16 @@
             </svg>
             <span>Facebook</span>
           </button>
-        </div>
+        </div> -->
       </div>
 
       <!-- Sign Up Link -->
-      <p class="text-center text-sm text-light-secondary">
+      <!-- <p class="text-center text-sm text-light-secondary">
         Don't have an account?
         <a href="#" class="font-medium text-light-primary hover:text-opacity-80"
           >Sign up</a
         >
-      </p>
+      </p> -->
     </div>
   </div>
 </template>

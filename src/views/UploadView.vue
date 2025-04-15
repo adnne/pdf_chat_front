@@ -53,12 +53,15 @@
           class="hidden"
           @change="handleFileSelect"
         />
-        <div class="flex justify-center" >
-          <button class="btn-primary px-6 py-3 self-center" @click="$refs.fileInput.click()">
-          Select File
+        <div class="flex justify-center">
+          <button
+            class="btn-primary px-6 py-3 self-center"
+            @click="$refs.fileInput.click()"
+          >
+            Select File
           </button>
         </div>
-      
+
         <p class="text-sm text-light-secondary mt-4">Maximum file size: 10MB</p>
       </div>
     </div>
@@ -126,6 +129,23 @@
         {{ isUploading ? "Uploading..." : "Upload File" }}
       </button>
     </div>
+    <div class="card space-y-4 mt-4" v-if="selectedFile">
+      <div class="space-y-4">
+        <div>
+          <label for="title" class="block text-sm font-medium mb-2"
+            >Document Title</label
+          >
+          <input
+            type="text"
+            id="title"
+            v-model="title"
+            class="input-field w-full"
+            placeholder="Enter document title"
+            required
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -139,24 +159,73 @@ const selectedFile = ref(null);
 const uploadProgress = ref(0);
 const isUploading = ref(false);
 const fileInput = ref(null);
+const title = ref("");
+const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+
+const handleFileSelect = (event) => {
+  const file = event.target.files[0];
+  if (file && file.type === "application/pdf") {
+    if (file.size > maxFileSize) {
+      alert("File size exceeds 10MB limit");
+      return;
+    }
+    selectedFile.value = file;
+    title.value = file.name.replace(".pdf", "");
+  }
+};
 
 const handleDrop = (event) => {
   isDragging.value = false;
   const file = event.dataTransfer.files[0];
   if (file && file.type === "application/pdf") {
+    if (file.size > maxFileSize) {
+      alert("File size exceeds 10MB limit");
+      return;
+    }
     selectedFile.value = file;
+    title.value = file.name.replace(".pdf", "");
   }
 };
 
-const handleFileSelect = (event) => {
-  const file = event.target.files[0];
-  if (file && file.type === "application/pdf") {
-    selectedFile.value = file;
+import { documents } from "@/services/documents";
+
+const uploadFile = async () => {
+  if (!selectedFile.value || !title.value.trim()) {
+    alert("Please provide a title for the document");
+    return;
+  }
+
+  isUploading.value = true;
+  uploadProgress.value = 0;
+
+  const interval = setInterval(() => {
+    if (uploadProgress.value < 90) {
+      uploadProgress.value += 10;
+    }
+  }, 500);
+
+  try {
+    await documents.upload({
+      file: selectedFile.value,
+      title: title.value.trim(),
+      size: selectedFile.value.size,
+    });
+
+    uploadProgress.value = 100;
+    setTimeout(() => {
+      router.push("/documents");
+    }, 500);
+  } catch (error) {
+    console.error("Upload failed:", error);
+  } finally {
+    clearInterval(interval);
+    isUploading.value = false;
   }
 };
 
 const clearSelectedFile = () => {
   selectedFile.value = null;
+  title.value = "";
   uploadProgress.value = 0;
   if (fileInput.value) {
     fileInput.value.value = "";
@@ -169,34 +238,5 @@ const formatFileSize = (bytes) => {
   const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-};
-
-const uploadFile = async () => {
-  if (!selectedFile.value) return;
-
-  isUploading.value = true;
-  uploadProgress.value = 0;
-
-  // Simulate upload progress
-  const interval = setInterval(() => {
-    if (uploadProgress.value < 90) {
-      uploadProgress.value += 10;
-    }
-  }, 500);
-
-  try {
-    // TODO: Implement actual file upload logic here
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    uploadProgress.value = 100;
-
-    setTimeout(() => {
-      router.push("/documents");
-    }, 500);
-  } catch (error) {
-    console.error("Upload failed:", error);
-  } finally {
-    clearInterval(interval);
-    isUploading.value = false;
-  }
 };
 </script>

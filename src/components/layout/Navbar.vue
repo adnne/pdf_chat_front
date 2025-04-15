@@ -50,7 +50,10 @@
 
     <!-- User Menu -->
     <div class="flex items-center space-x-2 sm:space-x-4">
-      <button class="btn-primary hidden sm:flex ">
+      <button
+        @click="showLogoutModal = true"
+        class="btn-primary hidden sm:flex"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5"
@@ -67,6 +70,12 @@
         </svg>
         <span class="ml-2">Logout</span>
       </button>
+
+      <LogoutModal
+        :is-open="showLogoutModal"
+        @confirm="handleLogout"
+        @cancel="showLogoutModal = false"
+      />
 
       <div class="relative">
         <button
@@ -99,6 +108,21 @@
 
 <script setup>
 import { ref, inject } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import LogoutModal from "../LogoutModal.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const authStore = useAuthStore();
+const showLogoutModal = ref(false);
+
+const handleLogout = () => {
+  authStore.logout();
+  showLogoutModal.value = false;
+  // Redirect to login page
+  router.push("/login");
+};
 
 const isUserMenuOpen = ref(false);
 const isSidebarOpen = inject("isSidebarOpen");

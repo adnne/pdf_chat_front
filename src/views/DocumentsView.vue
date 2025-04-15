@@ -114,6 +114,20 @@
             <h3 class="text-lg font-medium truncate">{{ document.name }}</h3>
             <p class="text-sm text-light-secondary">{{ document.date }}</p>
             <p class="text-sm text-light-secondary mt-2">{{ document.size }}</p>
+            <div class="mt-2">
+              <span
+                :class="{
+                  'px-2 py-1 rounded text-xs font-medium': true,
+                  'bg-green-100 text-green-800':
+                    document.status === 'processed',
+                  'bg-yellow-100 text-yellow-800':
+                    document.status === 'processing',
+                  'bg-red-100 text-red-800': document.status === 'failed',
+                }"
+              >
+                {{ document.status }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -144,39 +158,44 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import PdfPreviewModal from "../components/PdfPreviewModal.vue";
+import { documents as documentsService } from "../services/documents";
 
 const router = useRouter();
 const searchQuery = ref("");
 const sortBy = ref("date");
 const isGridView = ref(true);
+const documents = ref([]);
+const isLoading = ref(false);
+const error = ref(null);
 
-// Mock data - replace with actual API calls
-const documents = ref([
-  {
-    id: 1,
-    name: "Sample Document.pdf",
-    date: "2024-04-14",
-    size: "0.1 MB",
-    url: "/sample.pdf",
-  },
-  {
-    id: 2,
-    name: "Project Proposal.pdf",
-    date: "2024-04-13",
-    size: "2.5 MB",
-    url: "https://example.com/files/project-proposal.pdf",
-  },
-  {
-    id: 3,
-    name: "Technical Documentation.pdf",
-    date: "2024-04-12",
-    size: "1.8 MB",
-    url: "https://example.com/files/technical-documentation.pdf",
-  },
-]);
+const fetchDocuments = async () => {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const response = await documentsService.list();
+    documents.value = response.data.results.map((doc) => ({
+      id: doc.id,
+      name: doc.title,
+      date: new Date(doc.created_at).toLocaleDateString(),
+      size: `${(doc.size / (1024 * 1024)).toFixed(2)} MB`,
+      url: `${import.meta.env.VITE_API_URL}/pdf/${doc.id}/`,
+      processed: doc.processed,
+    }));
+  } catch (err) {
+    error.value = "Failed to load documents";
+    console.error(err);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchDocuments();
+});
+
 
 const filteredDocuments = computed(() => {
   let filtered = [...documents.value];

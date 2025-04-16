@@ -163,6 +163,7 @@ const fetchDocuments = async () => {
       size: `${(doc.file_size / (1024 * 1024)).toFixed(2)} MB`,
       url: `${import.meta.env.VITE_API_URL}/pdf/${doc.id}/`,
       processed: doc.processed,
+      conversation: doc.conversation,
     }));
   } catch (err) {
     error.value = "Failed to load documents";
@@ -205,7 +206,7 @@ const filteredDocuments = computed(() => {
 });
 
 const openChat = (document) => {
-  router.push(`/chat/${document.id}`);
+  router.push(`/chat/${document.conversation}`);
 };
 
 

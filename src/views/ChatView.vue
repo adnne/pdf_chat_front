@@ -8,7 +8,7 @@
     />
     <!-- Chat Header -->
     <div
-      class="flex items-center  p-4 border-b border-dark-accent bg-dark-secondary"
+      class="flex items-center p-4 border-b border-dark-accent bg-dark-secondary"
     >
       <div class="flex items-center space-x-4 w-full">
         <router-link to="/documents" class="btn-primary p-2">
@@ -25,7 +25,7 @@
             />
           </svg>
         </router-link>
-        <div class="flex items-center  space-x-4 w-full">
+        <div class="flex items-center space-x-4 w-full">
           <h2 class="text-lg font-semibold">{{ document?.name || "Chat" }}</h2>
           <button
             @click="isPdfPreviewOpen = true"
@@ -159,48 +159,39 @@
 import { ref, onMounted, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
 import PdfPreviewModal from "../components/PdfPreviewModal.vue";
+import { chat } from "@/services/chat";
 
 const route = useRoute();
 const messagesContainer = ref(null);
 const newMessage = ref("");
 const isTyping = ref(false);
 
-// Mock document data - replace with actual API call
-const document = ref({
-  id: route.params.id,
-  name: "Technical Documentation.pdf",
-  url: "/sample.pdf", // Replace with actual PDF URL
-});
-
+const conversationId = route.params.id;
+const document = ref(null);
+const messages = ref([]);
 const isPdfPreviewOpen = ref(false);
 
 const closePdfPreview = () => {
   isPdfPreviewOpen.value = false;
 };
 
-// Mock messages - replace with actual chat history
-const messages = ref([
-  {
-    type: "assistant",
-    content:
-      "Hello! I'm your PDF assistant. How can I help you with this document?",
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    status: "sent",
-  },
-  {
-    type: "user",
-    content: "Can you summarize the main points of the document?",
-    timestamp: new Date(Date.now() - 23 * 60 * 60 * 1000),
-    status: "sent",
-  },
-  {
-    type: "assistant",
-    content:
-      "I'll analyze the document and provide a summary of the key points...",
-    timestamp: new Date(Date.now() - 23 * 60 * 60 * 1000),
-    status: "sent",
-  },
-]);
+// Load conversation and messages
+const loadConversation = async () => {
+  try {
+    const response = await chat.getConversation(conversationId);
+    document.value = response.data.document;
+    messages.value = response.data.messages.map((msg) => ({
+      type: msg.role,
+      content: msg.content,
+      timestamp: new Date(msg.created_at),
+      status: "sent",
+    }));
+    await nextTick();
+    scrollToBottom();
+  } catch (error) {
+    console.log("Error loading conversation:", error);
+  }
+};
 
 const sendMessage = async () => {
   if (!newMessage.value.trim() || isTyping.value) return;
@@ -219,20 +210,27 @@ const sendMessage = async () => {
   await nextTick();
   scrollToBottom();
 
-  // Simulate AI response
+  // Send message to backend
   isTyping.value = true;
-  setTimeout(() => {
+  try {
+    const response = await chat.sendMessage(
+      conversationId,
+      userMessage.content
+    );
     const assistantMessage = {
       type: "assistant",
-      content:
-        "I'm analyzing your question and will provide a response based on the document content...",
-      timestamp: new Date(),
+      content: response.data.content,
+      timestamp: new Date(response.data.created_at),
       status: "sent",
     };
     messages.value.push(assistantMessage);
-    isTyping.value = false;
     scrollToBottom();
-  }, 2000);
+  } catch (error) {
+    console.error("Error sending message:", error);
+    // Add error handling UI feedback here if needed
+  } finally {
+    isTyping.value = false;
+  }
 };
 
 const scrollToBottom = () => {
@@ -271,7 +269,8 @@ const toggleSidebar = () => {
   // TODO: Implement sidebar toggle for document preview
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await loadConversation();
   scrollToBottom();
 });
 </script>

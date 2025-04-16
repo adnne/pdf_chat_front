@@ -17,5 +17,8 @@ export const documents = {
                 } 
             }
         );
+    },
+    delete(documentId) {
+        return axiosInterceptor.delete(`/documents/${documentId}/`);
     }
 }

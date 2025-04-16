@@ -52,14 +52,16 @@
           <option value="name">Name</option>
           <option value="size">Size</option>
         </select>
-        
       </div>
     </div>
 
     <!-- Documents Grid/List -->
-     <div v-if="documents.length===0" class="text-center mb-4 h-44 flex justify-center items-center">
+    <div
+      v-if="documents.length === 0"
+      class="text-center mb-4 h-44 flex justify-center items-center"
+    >
       <p class="text-light-secondary">No documents found.</p>
-     </div>
+    </div>
     <div
       :class="{
         'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6': isGridView,
@@ -69,9 +71,8 @@
       <div
         v-for="document in filteredDocuments"
         :key="document.id"
-        class="card hover:shadow-lg transition-shadow duration-200 "
+        class="card hover:shadow-lg transition-shadow duration-200"
       >
-   
         <!-- Document Card Content -->
         <div class="flex items-start space-x-4">
           <div class="p-2 bg-dark-accent rounded-lg">
@@ -107,12 +108,16 @@
               </span>
             </div>
           </div>
-          
         </div>
 
         <!-- Action Buttons -->
         <div class="mt-4 flex justify-end space-x-2">
-         
+          <button
+            class="btn-primary py-1 px-3 bg-red-500"
+            @click.stop="openDeleteModal(document)"
+          >
+            Delete
+          </button>
           <button
             class="btn-primary py-1 px-3"
             @click.stop="openDocument(document)"
@@ -129,6 +134,11 @@
       </div>
     </div>
   </div>
+  <DeleteConfirmationModal
+    :is-open="isDeleteModalOpen"
+    @close="closeDeleteModal"
+    @confirm="deleteDocument"
+  />
   <PdfPreviewModal
     :is-open="isPdfPreviewOpen"
     :title="selectedDocument?.name || 'PDF Preview'"
@@ -141,6 +151,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import PdfPreviewModal from "../components/PdfPreviewModal.vue";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal.vue";
 import { documents as documentsService } from "../services/documents";
 
 const router = useRouter();
@@ -177,7 +188,6 @@ onMounted(() => {
   fetchDocuments();
 });
 
-
 const filteredDocuments = computed(() => {
   let filtered = [...documents.value];
 
@@ -209,9 +219,30 @@ const openChat = (document) => {
   router.push(`/chat/${document.conversation}`);
 };
 
+const openDeleteModal = (document) => {
+  documentToDelete.value = document;
+  isDeleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+  isDeleteModalOpen.value = false;
+  documentToDelete.value = null;
+};
+
+const deleteDocument = async () => {
+  try {
+    await documentsService.delete(documentToDelete.value.id);
+    await fetchDocuments(); // Refresh the documents list
+    closeDeleteModal();
+  } catch (error) {
+    console.error("Error deleting document:", error);
+  }
+};
 
 const selectedDocument = ref(null);
 const isPdfPreviewOpen = ref(false);
+const isDeleteModalOpen = ref(false);
+const documentToDelete = ref(null);
 
 const openDocument = (document) => {
   selectedDocument.value = document;

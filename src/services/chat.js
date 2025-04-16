@@ -3,7 +3,12 @@ import axiosInterceptor from '@/utils/axiosInterceptor';
 export const chat = {
     // Get conversation history
     getConversation(conversationId) {
-        return axiosInterceptor.get(`/conversations/${conversationId}/`);
+        return axiosInterceptor.get(`/conversations/${conversationId}/`);    
+    },
+
+    // Get paginated messages for a conversation
+    getMessages(conversationId, page = 1) {
+        return axiosInterceptor.get(`/conversations/${conversationId}/messages/?page=${page}`);
     },
 
     // Send a message to the conversation

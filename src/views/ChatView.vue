@@ -2,8 +2,8 @@
   <div class="h-[calc(100vh-130px)] flex flex-col border border-dark-accent/20">
     <PdfPreviewModal
       :is-open="isPdfPreviewOpen"
-      :title="document?.name || 'PDF Preview'"
-      :pdf-url="document?.url || ''"
+      :title="document?.document_title || 'PDF Preview'"
+      :pdf-url="fileUrl || ''"
       @close="closePdfPreview"
     />
     <!-- Chat Header -->
@@ -26,7 +26,9 @@
           </svg>
         </router-link>
         <div class="flex items-center space-x-4 w-full">
-          <h2 class="text-lg font-semibold">{{ document?.name || "Chat" }}</h2>
+          <h2 class="text-lg font-semibold">
+            {{ document.document_title || "Chat" }}
+          </h2>
           <button
             @click="isPdfPreviewOpen = true"
             class="btn-primary p-2"
@@ -167,29 +169,59 @@ const newMessage = ref("");
 const isTyping = ref(false);
 
 const conversationId = route.params.id;
-const document = ref(null);
+const document = ref({});
+const fileUrl = computed(
+  () => `${import.meta.env.VITE_API_URL}/pdf/${document.value.document}/`
+);
 const messages = ref([]);
 const isPdfPreviewOpen = ref(false);
+const currentPage = ref(1);
+const isLoading = ref(false);
+const hasMoreMessages = ref(true);
 
 const closePdfPreview = () => {
   isPdfPreviewOpen.value = false;
 };
 
-// Load conversation and messages
+// Load conversation details
 const loadConversation = async () => {
   try {
     const response = await chat.getConversation(conversationId);
-    document.value = response.data.document;
-    messages.value = response.data.messages.map((msg) => ({
+    console.log(response.data);
+
+    document.value = response.data;
+    await loadMessages();
+  } catch (error) {
+    console.log("Error loading conversation:", error);
+  }
+};
+
+// Load paginated messages
+const loadMessages = async () => {
+  if (isLoading.value || !hasMoreMessages.value) return;
+
+  isLoading.value = true;
+  try {
+    const response = await chat.getMessages(conversationId, currentPage.value);
+    const newMessages = response.data.results.map((msg) => ({
       type: msg.role,
       content: msg.content,
       timestamp: new Date(msg.created_at),
       status: "sent",
     }));
-    await nextTick();
-    scrollToBottom();
+
+    messages.value = [...newMessages.reverse(), ...messages.value];
+    hasMoreMessages.value = response.data.next !== null;
+    currentPage.value++;
+
+    if (currentPage.value === 1) {
+      await nextTick();
+      scrollToBottom();
+    }
   } catch (error) {
-    console.log("Error loading conversation:", error);
+    console.log("Error loading messages:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -262,7 +294,10 @@ const showMessageDate = (message, index) => {
 };
 
 const handleScroll = () => {
-  // TODO: Implement infinite scroll for chat history
+  const container = messagesContainer.value;
+  if (container.scrollTop <= container.clientHeight * 0.2) {
+    loadMessages();
+  }
 };
 
 const toggleSidebar = () => {

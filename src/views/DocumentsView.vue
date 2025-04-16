@@ -52,36 +52,14 @@
           <option value="name">Name</option>
           <option value="size">Size</option>
         </select>
-        <button @click="isGridView = !isGridView" class="btn-primary p-2">
-          <svg
-            v-if="isGridView"
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              d="M2 4a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H3a1 1 0 01-1-1V4zM6 4a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V4zM10 4a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"
-            />
-          </svg>
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </button>
+        
       </div>
     </div>
 
     <!-- Documents Grid/List -->
+     <div v-if="documents.length===0" class="text-center mb-4 h-44 flex justify-center items-center">
+      <p class="text-light-secondary">No documents found.</p>
+     </div>
     <div
       :class="{
         'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6': isGridView,
@@ -91,9 +69,9 @@
       <div
         v-for="document in filteredDocuments"
         :key="document.id"
-        class="card hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-        @click="openDocument(document)"
+        class="card hover:shadow-lg transition-shadow duration-200 "
       >
+   
         <!-- Document Card Content -->
         <div class="flex items-start space-x-4">
           <div class="p-2 bg-dark-accent rounded-lg">
@@ -129,21 +107,23 @@
               </span>
             </div>
           </div>
+          
         </div>
 
         <!-- Action Buttons -->
         <div class="mt-4 flex justify-end space-x-2">
+         
+          <button
+            class="btn-primary py-1 px-3"
+            @click.stop="openDocument(document)"
+          >
+            Preview file
+          </button>
           <button
             class="btn-primary py-1 px-3"
             @click.stop="openChat(document)"
           >
             Chat
-          </button>
-          <button
-            class="btn-primary py-1 px-3"
-            @click.stop="downloadDocument(document)"
-          >
-            Download
           </button>
         </div>
       </div>
@@ -180,7 +160,7 @@ const fetchDocuments = async () => {
       id: doc.id,
       name: doc.title,
       date: new Date(doc.created_at).toLocaleDateString(),
-      size: `${(doc.size / (1024 * 1024)).toFixed(2)} MB`,
+      size: `${(doc.file_size / (1024 * 1024)).toFixed(2)} MB`,
       url: `${import.meta.env.VITE_API_URL}/pdf/${doc.id}/`,
       processed: doc.processed,
     }));
@@ -228,10 +208,6 @@ const openChat = (document) => {
   router.push(`/chat/${document.id}`);
 };
 
-const downloadDocument = (document) => {
-  // TODO: Implement document download
-  console.log("Downloading:", document.name);
-};
 
 const selectedDocument = ref(null);
 const isPdfPreviewOpen = ref(false);

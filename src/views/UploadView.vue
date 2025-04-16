@@ -103,6 +103,7 @@
             {{ formatFileSize(selectedFile.size) }}
           </p>
         </div>
+        
         <button
           class="text-light-secondary hover:text-light-primary"
           @click="clearSelectedFile"
@@ -121,15 +122,6 @@
           </svg>
         </button>
       </div>
-      <button
-        class="btn-primary w-full py-3"
-        :disabled="isUploading"
-        @click="uploadFile"
-      >
-        {{ isUploading ? "Uploading..." : "Upload File" }}
-      </button>
-    </div>
-    <div class="card space-y-4 mt-4" v-if="selectedFile">
       <div class="space-y-4">
         <div>
           <label for="title" class="block text-sm font-medium mb-2"
@@ -145,7 +137,15 @@
           />
         </div>
       </div>
+      <button
+        class="btn-primary w-full py-3"
+        :disabled="isUploading"
+        @click="uploadFile"
+      >
+        {{ isUploading ? "Uploading..." : "Upload File" }}
+      </button>
     </div>
+  
   </div>
 </template>
 
@@ -205,10 +205,11 @@ const uploadFile = async () => {
   }, 500);
 
   try {
+    console.log("Uploading file:", selectedFile.value);
     await documents.upload({
       file: selectedFile.value,
       title: title.value.trim(),
-      size: selectedFile.value.size,
+      file_size: selectedFile.value.size,
     });
 
     uploadProgress.value = 100;

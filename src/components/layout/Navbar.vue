@@ -85,10 +85,10 @@
           <div
             class="w-8 h-8 rounded-full bg-dark-accent flex items-center justify-center"
           >
-            <span class="text-sm font-medium">JD</span>
+            <span v-if="authStore.user" class="text-sm font-medium">{{ authStore.user.username.slice(0, 2) }}</span>
           </div>
         </button>
-
+        
         <!-- Dropdown Menu -->
         <div
           v-if="isUserMenuOpen"

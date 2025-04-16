@@ -8,7 +8,7 @@ export const documents = {
         const formData = new FormData();
         formData.append('file', document.file);
         formData.append('title', document.title);
-        formData.append('size', document.size);
+        formData.append('file_size', document.file_size);
 
         return axiosInterceptor.post('/documents/', document ,
             {

@@ -88,15 +88,6 @@
           >
             <p class="whitespace-pre-wrap break-words">
               {{ message.content }}
-              <span
-                v-if="
-                  isTyping &&
-                  index === messages.length - 1 &&
-                  message.type === 'assistant'
-                "
-                class="blinking-cursor"
-                >|</span
-              >
             </p>
 
             <div class="mt-1 flex justify-end items-center space-x-2">
@@ -127,7 +118,7 @@
       </div>
 
       <!-- Typing Indicator -->
-      <div v-if="isTyping" class="flex justify-start">
+      <div v-if="isloadning" class="flex justify-start">
         <div
           class="bg-dark-secondary text-light-secondary rounded-lg p-3 space-x-1"
         >
@@ -175,10 +166,19 @@ import { useRoute } from "vue-router";
 import PdfPreviewModal from "../components/PdfPreviewModal.vue";
 import { chat } from "@/services/chat";
 
+// Debounce utility
+function debounce(fn, delay) {
+  let timeout;
+  return function (...args) {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
 const route = useRoute();
 const messagesContainer = ref(null);
 const newMessage = ref("");
 const isTyping = ref(false);
+const isloadning = ref(false);
 
 const conversationId = route.params.id;
 const document = ref({});
@@ -256,6 +256,7 @@ const sendMessage = async () => {
   scrollToBottom();
 
   isTyping.value = true;
+  isloadning.value = true;
 
   const assistantMessage = {
     type: "assistant",
@@ -283,7 +284,7 @@ const sendMessage = async () => {
     if (!response.ok || !response.body) {
       throw new Error("Streaming request failed");
     }
-
+    isloadning.value = false;
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let assistantText = "";
@@ -322,6 +323,7 @@ const sendMessage = async () => {
     console.error("Streaming error:", error);
     assistantMessage.status = "error";
     isTyping.value = false;
+    isloadning.value = false;
   }
 };
 
@@ -353,12 +355,12 @@ const showMessageDate = (message, index) => {
   return formatDate(message.timestamp) !== formatDate(prevMessage.timestamp);
 };
 
-const handleScroll = () => {
+const handleScroll = debounce(() => {
   const container = messagesContainer.value;
-  if (container.scrollTop <= container.clientHeight * 0.2) {
+  if (container.scrollTop <= container.clientHeight * 0.2 && !isLoading.value) {
     loadMessages();
   }
-};
+}, 300);
 
 const toggleSidebar = () => {
   // TODO: Implement sidebar toggle for document preview

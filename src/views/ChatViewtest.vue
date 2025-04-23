@@ -79,26 +79,14 @@
           :class="message.type === 'user' ? 'justify-end' : 'justify-start'"
         >
           <div
-            class="max-w-[80%] rounded-lg p-3 relative"
+            class="max-w-[80%] rounded-lg p-3"
             :class="{
               'bg-dark-accent text-light-primary': message.type === 'user',
               'bg-dark-secondary text-light-primary':
                 message.type === 'assistant',
             }"
           >
-            <p class="whitespace-pre-wrap break-words">
-              {{ message.content }}
-              <span
-                v-if="
-                  isTyping &&
-                  index === messages.length - 1 &&
-                  message.type === 'assistant'
-                "
-                class="blinking-cursor"
-                >|</span
-              >
-            </p>
-
+            <p class="whitespace-pre-wrap">{{ message.content }}</p>
             <div class="mt-1 flex justify-end items-center space-x-2">
               <span class="text-xs text-light-secondary">
                 {{ formatTime(message.timestamp) }}
@@ -169,7 +157,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup >
 import { ref, onMounted, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
 import PdfPreviewModal from "../components/PdfPreviewModal.vue";
@@ -195,20 +183,7 @@ const closePdfPreview = () => {
   isPdfPreviewOpen.value = false;
 };
 
-// Load conversation details
-const loadConversation = async () => {
-  try {
-    const response = await chat.getConversation(conversationId);
-    console.log(response.data);
 
-    document.value = response.data;
-    await loadMessages();
-  } catch (error) {
-    console.log("Error loading conversation:", error);
-  }
-};
-
-// Load paginated messages
 const loadMessages = async () => {
   if (isLoading.value || !hasMoreMessages.value) return;
 
@@ -241,95 +216,33 @@ const sendMessage = async () => {
   if (!newMessage.value.trim() || isTyping.value) return;
 
   const token = localStorage.getItem("access_token");
+  console.log(token);
+  
 
-  const userMessage = {
-    type: "user",
-    content: newMessage.value,
-    timestamp: new Date(),
-    status: "sent",
-  };
-  messages.value.push(userMessage);
-  const contentToSend = newMessage.value;
-  newMessage.value = "";
+  const response = await fetch('http://localhost:8000/api/conversations/9/test_streamresponse/', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`, 
+     },
+    body: JSON.stringify({ message :newMessage.value})
+  });
 
-  await nextTick();
-  scrollToBottom();
+  if (!response.body) throw new Error('No response body');
 
-  isTyping.value = true;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
 
-  const assistantMessage = {
-    type: "assistant",
-    content: "",
-    timestamp: new Date(),
-    status: "pending",
-  };
-  messages.value.push(assistantMessage);
-  await nextTick();
-  scrollToBottom();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
 
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/conversations/${conversationId}/chat/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ message: contentToSend }),
-      }
-    );
-
-    if (!response.ok || !response.body) {
-      throw new Error("Streaming request failed");
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let assistantText = "";
-    let readerDone = false;
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        readerDone = true;
-        break;
-      }
-      let chunk = decoder.decode(value, { stream: true });
-      chunk.split("\n").forEach(async (line) => {
-        if (line.startsWith("data:")) {
-          let clean = line.replace(/^data:/, "").trimStart();
-          if (clean) {
-            assistantText += clean + " ";
-            assistantMessage.content = assistantText;
-            messages.value[messages.value.length - 1] = {
-              ...assistantMessage,
-            };
-            scrollToBottom();
-            await new Promise((resolve) => setTimeout(resolve, 22));
-          }
-        }
-      });
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    }
-
-    if (readerDone) {
-      assistantMessage.status = "sent";
-      assistantMessage.timestamp = new Date();
-      isTyping.value = false;
-    }
-  } catch (error) {
-    console.error("Streaming error:", error);
-    assistantMessage.status = "error";
-    isTyping.value = false;
+    const chunk = decoder.decode(value, { stream: true });
+    console.log('Chunk:', chunk);
   }
 };
 
-const scrollToBottom = () => {
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-  }
-};
+
 
 const formatDate = (date) => {
   return new Intl.DateTimeFormat("en-US", {
@@ -360,49 +273,9 @@ const handleScroll = () => {
   }
 };
 
-const toggleSidebar = () => {
-  // TODO: Implement sidebar toggle for document preview
-};
+
 
 onMounted(async () => {
-  await loadConversation();
-  scrollToBottom();
 });
+
 </script>
-
-<style scoped>
-.blinking-cursor {
-  display: inline-block;
-  width: 1ch;
-  animation: blink 1s steps(1) infinite;
-}
-
-.dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-left: 2px;
-  background: #bbb;
-  border-radius: 50%;
-  animation: bounce 1.2s infinite;
-}
-.dot1 {
-  animation-delay: 0s;
-}
-.dot2 {
-  animation-delay: 0.2s;
-}
-.dot3 {
-  animation-delay: 0.4s;
-}
-@keyframes bounce {
-  0%,
-  80%,
-  100% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(1.5);
-  }
-}
-</style>
